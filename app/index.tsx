@@ -1,23 +1,27 @@
-import { Ionicons } from "@expo/vector-icons"; // Ikon bawaan Expo
+import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  NavigationIndependentTree,
+} from "@react-navigation/native";
+
 import React from "react";
 import {
   Dimensions,
   Image,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context"; // <-- Ini perbaikannya
 
 const { width } = Dimensions.get("window");
 const Tab = createBottomTabNavigator();
 
 // ==========================================
-// 1. DATA STATIS (Edit teksmu di sini!)
+// 1. DATA STATIS
 // ==========================================
 const DATA = {
   hero: {
@@ -25,8 +29,7 @@ const DATA = {
     title2: "& PROGRAMMER",
     name: "Sandro Mahesa",
     location: "Malang, Indonesia",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=500&auto=format&fit=crop",
+    image: require("../assets/images/sandro.png"),
   },
   about: {
     text1:
@@ -87,10 +90,8 @@ const DATA = {
 };
 
 // ==========================================
-// 2. KOMPONEN HALAMAN (SCREENS)
+// 2. KOMPONEN HALAMAN
 // ==========================================
-
-// --- HALAMAN HOME ---
 function HomeScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -108,7 +109,7 @@ function HomeScreen() {
           </View>
         </View>
         <View style={styles.domeContainer}>
-          <Image source={{ uri: DATA.hero.image }} style={styles.domeImage} />
+          <Image source={DATA.hero.image} style={styles.domeImage} />
         </View>
       </View>
       <View style={styles.aboutSection}>
@@ -125,7 +126,6 @@ function HomeScreen() {
   );
 }
 
-// --- HALAMAN PROJECTS ---
 function ProjectsScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -140,7 +140,7 @@ function ProjectsScreen() {
               <Text style={styles.cardTitle}>{p.title}</Text>
               <View style={styles.badgeRow}>
                 {p.tech.map((tech, i) => (
-                  <View key={i} style={styles.badge}>
+                  <View key={tech} style={styles.badge}>
                     <Text style={styles.badgeText}>{tech}</Text>
                   </View>
                 ))}
@@ -153,7 +153,6 @@ function ProjectsScreen() {
   );
 }
 
-// --- HALAMAN SKILLS ---
 function SkillsScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -179,7 +178,6 @@ function SkillsScreen() {
   );
 }
 
-// --- HALAMAN EXPERIENCE ---
 function ExperienceScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -199,7 +197,6 @@ function ExperienceScreen() {
   );
 }
 
-// --- HALAMAN EDUCATION ---
 function EducationScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -220,49 +217,56 @@ function EducationScreen() {
 }
 
 // ==========================================
-// 3. NAVIGASI UTAMA (APP COMPONENT)
+// 3. NAVIGASI UTAMA
 // ==========================================
 export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0B1120" />
-      <NavigationContainer independent={true}>
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            headerShown: false, // Sembunyikan header bawaan
-            tabBarStyle: {
-              backgroundColor: "#001D39",
-              borderTopColor: "rgba(255,255,255,0.05)",
-              paddingBottom: 5,
-              paddingTop: 5,
-              height: 60,
-            },
-            tabBarActiveTintColor: "#7BBDE8",
-            tabBarInactiveTintColor: "#6EA2B3",
-            tabBarLabelStyle: { fontSize: 10, fontWeight: "bold" },
-            tabBarIcon: ({ focused, color, size }) => {
-              let iconName;
-              if (route.name === "Home")
-                iconName = focused ? "home" : "home-outline";
-              else if (route.name === "Projects")
-                iconName = focused ? "code-slash" : "code-slash-outline";
-              else if (route.name === "Skills")
-                iconName = focused ? "flash" : "flash-outline";
-              else if (route.name === "Experience")
-                iconName = focused ? "briefcase" : "briefcase-outline";
-              else if (route.name === "Education")
-                iconName = focused ? "school" : "school-outline";
-              return <Ionicons name={iconName} size={24} color={color} />;
-            },
-          })}
-        >
-          <Tab.Screen name="Home" component={HomeScreen} />
-          <Tab.Screen name="Projects" component={ProjectsScreen} />
-          <Tab.Screen name="Skills" component={SkillsScreen} />
-          <Tab.Screen name="Experience" component={ExperienceScreen} />
-          <Tab.Screen name="Education" component={EducationScreen} />
-        </Tab.Navigator>
-      </NavigationContainer>
+
+      {/* Bungkus NavigationContainer dengan pohon independen sesuai permintaan error */}
+      <NavigationIndependentTree>
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              headerShown: false,
+              tabBarStyle: {
+                backgroundColor: "#001D39",
+                borderTopColor: "rgba(255,255,255,0.05)",
+                paddingBottom: 5,
+                paddingTop: 5,
+                height: 60,
+              },
+              tabBarActiveTintColor: "#7BBDE8",
+              tabBarInactiveTintColor: "#6EA2B3",
+              tabBarLabelStyle: { fontSize: 10, fontWeight: "bold" },
+              tabBarIcon: ({ focused, color }) => {
+                // Perbaikan TypeScript: Tambahkan ': any' agar tidak diprotes
+                let iconName: any;
+
+                if (route.name === "Home")
+                  iconName = focused ? "home" : "home-outline";
+                else if (route.name === "Projects")
+                  iconName = focused ? "code-slash" : "code-slash-outline";
+                else if (route.name === "Skills")
+                  iconName = focused ? "flash" : "flash-outline";
+                else if (route.name === "Experience")
+                  iconName = focused ? "briefcase" : "briefcase-outline";
+                else if (route.name === "Education")
+                  iconName = focused ? "school" : "school-outline";
+
+                return <Ionicons name={iconName} size={24} color={color} />;
+              },
+            })}
+          >
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Projects" component={ProjectsScreen} />
+            <Tab.Screen name="Skills" component={SkillsScreen} />
+            <Tab.Screen name="Experience" component={ExperienceScreen} />
+            <Tab.Screen name="Education" component={EducationScreen} />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </NavigationIndependentTree>
     </SafeAreaView>
   );
 }
@@ -274,8 +278,6 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#0B1120" },
   container: { flex: 1, backgroundColor: "#0B1120" },
   pagePadding: { paddingHorizontal: 25, paddingTop: 40, paddingBottom: 40 },
-
-  // Gaya Hero
   heroSection: { paddingTop: 40, paddingHorizontal: 20, alignItems: "center" },
   heroTitleMain: {
     fontSize: 42,
@@ -303,19 +305,28 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   domeContainer: {
-    width: width * 0.7,
-    height: 350,
+    width: 280, // Lebar tetap agar presisi
+    height: 380, // Tinggi gambar
     backgroundColor: "#0A4174",
-    borderTopLeftRadius: 200,
-    borderTopRightRadius: 200,
+    borderTopLeftRadius: 140, // WAJIB setengah dari width (280/2) agar lengkung sempurna
+    borderTopRightRadius: 140, // WAJIB setengah dari width (280/2)
     overflow: "hidden",
-    marginTop: -40,
+    marginTop: 40, // Jarak aman dari teks 'BASED IN' di atasnya
+    alignSelf: "center", // Taruh tepat di tengah layar
     borderWidth: 1,
-    borderColor: "rgba(123, 189, 232, 0.2)",
+    borderColor: "rgba(123, 189, 232, 0.4)",
+    shadowColor: "#0A4174", // Tambahan efek bayangan
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10, // Bayangan khusus Android
   },
-  domeImage: { width: "100%", height: "100%", opacity: 0.9 },
-
-  // Teks Global
+  domeImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover", // Mencegah gambar menjadi gepeng/tertarik
+    opacity: 0.9,
+  },
   sectionTitle: {
     fontSize: 38,
     fontWeight: "900",
@@ -346,8 +357,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
   },
-
-  // Card Projects
   card: {
     backgroundColor: "rgba(0, 29, 57, 0.4)",
     borderWidth: 1,
@@ -364,8 +373,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     marginBottom: 10,
   },
-
-  // Badges & Grid
   badgeRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center" },
   badge: {
     backgroundColor: "#BDD8E9",
@@ -376,7 +383,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   badgeText: { color: "#001D39", fontSize: 10, fontWeight: "bold" },
-
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -391,8 +397,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 15,
   },
-
-  // List Timeline (Experience & Edu)
   listCard: {
     backgroundColor: "rgba(0, 29, 57, 0.4)",
     borderLeftWidth: 3,
